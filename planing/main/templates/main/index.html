@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Планирование производства</title>
+
+    <script>
+        function generateTable() {
+            const n = parseInt(document.getElementById("n_jobs").value);
+            const m = parseInt(document.getElementById("m_machines").value);
+            const table = document.getElementById("matrixTable");
+            table.innerHTML = "";
+
+            for (let i = 0; i < n; i++) {
+                const row = table.insertRow();
+                for (let j = 0; j < m; j++) {
+                    const cell = row.insertCell();
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.name = `cell_${i}_${j}`;
+                    input.style.width = "60px";
+                    input.required = true;
+                    cell.appendChild(input);
+                }
+            }
+        }
+
+        function generateRandom() {
+            const inputs = document.querySelectorAll("#matrixTable input");
+            inputs.forEach(input => {
+                input.value = Math.floor(Math.random() * 50) + 1;
+            });
+        }
+
+        function buildTable(matrix) {
+            const table = document.getElementById("matrixTable");
+            table.innerHTML = "";
+
+            for (let i = 0; i < matrix.length; i++) {
+                const row = table.insertRow();
+                for (let j = 0; j < matrix[i].length; j++) {
+                    const cell = row.insertCell();
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.value = matrix[i][j];
+                    input.name = `cell_${i}_${j}`;
+                    input.style.width = "60px";
+                    input.required = true;
+                    cell.appendChild(input);
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<h2>Оперативное планирование</h2>
+
+<!-- ФОРМА ДЛЯ РАСЧЕТА -->
+<form method="post" action="">
+    {% csrf_token %}
+
+    <label>Выберите алгоритм:</label>
+    <select name="algorithm">
+        <option value="johnson">Алгоритм Джонсона</option>
+        <option value="petrov">Метод Петрова-Соколицына</option>
+        <option value="branch_bound">Метод ветвей и границ</option>
+        <option value="branch_bound_mod">Метод ветвей и границ (мод.)</option>
+        <option value="new_method">Новый метод</option>
+    </select>
+
+    <br><br>
+
+    <label>Количество деталей (n):</label>
+    <input type="number"
+           id="n_jobs"
+           name="n_jobs"
+           min="3"
+           max="100"
+           value="{{ n|default:3 }}">
+
+    <label>Количество станков (m):</label>
+    <input type="number"
+           id="m_machines"
+           name="m_machines"
+           min="3"
+           max="100"
+           value="{{ m|default:3 }}">
+
+    <button type="button" onclick="generateTable()">Создать таблицу</button>
+
+    <br><br>
+
+    <table border="1" id="matrixTable"></table>
+
+    <br>
+
+    <button type="button" onclick="generateRandom()">Сгенерировать случайные значения</button>
+
+    <br><br>
+
+    <button type="submit">Рассчитать</button>
+</form>
+
+<hr>
+
+<!-- ФОРМА ДЛЯ ЗАГРУЗКИ EXCEL -->
+<form method="post"
+      action="{% url 'main:index' %}"
+      enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Загрузить Excel:</label>
+    <input type="file" name="file" accept=".xls,.xlsx">
+    <button type="submit">Загрузить</button>
+</form>
+
+
+<!-- ЕСЛИ ПРИШЛА МАТРИЦА ИЗ EXCEL -->
+{% if matrix %}
+<script>
+    const matrixFromServer = {{ matrix|safe }};
+    document.getElementById("n_jobs").value = {{ n }};
+    document.getElementById("m_machines").value = {{ m }};
+    buildTable(matrixFromServer);
+</script>
+{% endif %}
+
+</body>
+</html>
