@@ -1,0 +1,485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты оптимизации</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6fa;
+            color: #1e293b;
+            padding: 30px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h2, h3, h4 {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #1e40af;
+        }
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+            margin-bottom: 30px;
+            border: 1px solid #e9eef2;
+        }
+
+        .matrix-table {
+            border-collapse: collapse;
+            width: auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .matrix-table th, .matrix-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .matrix-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .badge {
+            background: #e9eef2;
+            color: #334155;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .order-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .order-item {
+            background: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(37,99,235,0.2);
+        }
+
+        pre {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .settings-panel {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 30px;
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .setting-item label {
+            font-weight: 500;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .setting-item input[type="range"] {
+            width: 180px;
+            accent-color: #2563eb;
+        }
+        .setting-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            border-radius: 4px;
+        }
+        .setting-item select {
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-weight: 500;
+            color: #1e293b;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #gantt {
+            margin-top: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            border-radius: 16px;
+            background: white;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02);
+        }
+        .timeline {
+            position: relative;
+            height: 40px;
+            border-left: 2px solid #1e293b;
+            border-bottom: 1px solid #d1d5db;
+            min-width: 1200px;
+        }
+        .machine-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .machine-label {
+            width: 100px;
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .task {
+            position: absolute;
+            height: 30px;
+            top: 5px;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 700;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.2s;
+            cursor: default;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .info-item .label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        .info-item .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px dashed #d1d5db;
+            margin: 30px 0;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'main:index' %}" class="back-link"><i class="fas fa-arrow-left"></i> Вернуться к вводу данных</a>
+
+        <div class="card">
+            <h2><i class="fas fa-chart-line" style="margin-right: 10px; color: #2563eb;"></i> Результаты расчёта алгоритмом {{ algorithm_name }}</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Длительность цикла</div>
+                    <div class="value">{{ makespan }} ч.</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Время расчёта</div>
+                    <div class="value">{{ calc_time }} с</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Количество деталей</div>
+                    <div class="value">{{ n }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Количество станков</div>
+                    <div class="value">{{ m }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4><i class="fas fa-table" style="margin-right: 8px; color: #2563eb;"></i> Исходная матрица обработки</h4>
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Деталь / Станок</th>
+                        {% for j in ""|ljust:m %}<th>Станок {{ forloop.counter }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in matrix %}
+                    <tr>
+                        <th>Деталь {{ forloop.counter }}</th>
+                        {% for val in row %}<td>{{ val }}</td>{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h4><i class="fas fa-sort-amount-down" style="margin-right: 8px; color: #2563eb;"></i> Оптимальная последовательность запуска деталей</h4>
+            <div class="order-list">
+                {% for job in order %}
+                <span class="order-item">{{ job }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h4><i class="fas fa-clipboard-list" style="margin-right: 8px; color: #2563eb;"></i> Детали расчёта</h4>
+            <pre>{{ details }}</pre>
+        </div>
+
+        <hr>
+
+        <h3><i class="fas fa-chart-gantt" style="margin-right: 10px; color: #2563eb;"></i> Диаграмма Ганта</h3>
+
+        <div class="settings-panel">
+            <div class="setting-item">
+                <label for="scaleRange"><i class="fas fa-arrows-alt-h"></i> Масштаб ширины:</label>
+                <input type="range" id="scaleRange" min="20" max="80" value="40" step="1">
+                <span id="scaleValue">40px/ч</span>
+            </div>
+            <div class="setting-item">
+                <label for="showDuration"><i class="far fa-clock"></i> Показывать длительность:</label>
+                <input type="checkbox" id="showDuration">
+            </div>
+            <div class="setting-item">
+                <label for="colorScheme"><i class="fas fa-palette"></i> Цветовая схема:</label>
+                <select id="colorScheme">
+                    <option value="default" selected>Стандартная</option>
+                    <option value="pastel">Пастельная</option>
+                    <option value="contrast">Контрастная</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="gantt"></div>
+
+        <h3 style="margin-top: 40px;"><i class="fas fa-chart-bar" style="margin-right: 10px; color: #2563eb;"></i> Загрузка станков (%)</h3>
+        <canvas id="loadChart" width="800" height="300"></canvas>
+
+        <div class="footer-note">
+            <i class="far fa-calendar-alt"></i> Дата расчёта: {{ now|date:"d.m.Y H:i" }}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ganttData = {{ gantt_data|safe }};
+        let machineLoads = {{ machine_loads|safe }};
+
+        const colorPalettes = {
+            default: ["#e53935", "#8e24aa", "#3949ab", "#1e88e5", "#00897b", "#43a047", "#fdd835", "#fb8c00", "#6d4c41", "#546e7a"],
+            pastel: ["#ffb3ba", "#c5b0d5", "#aec7e8", "#ffbb78", "#98df8a", "#ff9896", "#c7c7c7", "#dbdb8d", "#f7b6d2", "#c49c94"],
+            contrast: ["#ff0000", "#ff9900", "#ffcc00", "#33cc33", "#3399ff", "#9933ff", "#ff3399", "#00cccc", "#996633", "#666666"]
+        };
+
+        function getColor(job, scheme = 'default') {
+            const num = parseInt(job.replace(/\D/g, '')) - 1;
+            const palette = colorPalettes[scheme] || colorPalettes.default;
+            return palette[num % palette.length];
+        }
+
+        const scaleRange = document.getElementById('scaleRange');
+        const scaleSpan = document.getElementById('scaleValue');
+        const showDuration = document.getElementById('showDuration');
+        const colorSchemeSelect = document.getElementById('colorScheme');
+
+        let currentScale = 40;
+        let currentShowDuration = false;
+        let currentScheme = 'default';
+
+        scaleRange.addEventListener('input', function() {
+            currentScale = parseInt(this.value);
+            scaleSpan.innerText = currentScale + 'px/ч';
+            renderGantt();
+        });
+
+        showDuration.addEventListener('change', function() {
+            currentShowDuration = this.checked;
+            renderGantt();
+        });
+
+        colorSchemeSelect.addEventListener('change', function() {
+            currentScheme = this.value;
+            renderGantt();
+        });
+
+        function renderGantt() {
+            const ganttDiv = document.getElementById('gantt');
+            ganttDiv.innerHTML = '';
+
+            const machines = [...new Set(ganttData.map(t => t.machine))];
+
+            machines.forEach(machine => {
+                const row = document.createElement('div');
+                row.className = 'machine-row';
+
+                const label = document.createElement('div');
+                label.className = 'machine-label';
+                label.innerText = machine;
+
+                const timeline = document.createElement('div');
+                timeline.className = 'timeline';
+
+                const tasks = ganttData.filter(t => t.machine === machine);
+
+                tasks.forEach(task => {
+                    const block = document.createElement('div');
+                    block.className = 'task';
+
+                    block.style.left = (task.start * currentScale) + 'px';
+                    block.style.width = (task.duration * currentScale) + 'px';
+                    block.style.backgroundColor = getColor(task.job, currentScheme);
+
+                    if (currentShowDuration) {
+                        block.innerText = `${task.job} (${task.duration}ч)`;
+                    } else {
+                        block.innerText = task.job;
+                    }
+
+                    block.title = `${task.job} — ${task.duration} ч (начало: ${task.start} ч)`;
+
+                    timeline.appendChild(block);
+                });
+
+                row.appendChild(label);
+                row.appendChild(timeline);
+                ganttDiv.appendChild(row);
+            });
+        }
+
+        renderGantt();
+
+
+new Chart(document.getElementById('loadChart'), {
+
+    type: 'bar',
+
+    data: {
+
+        labels: machineLoads.map(d => d.machine),
+
+        datasets: [{
+
+            label: 'Эффективность (%)',
+
+            data: machineLoads.map(d => d.efficiency),
+
+            backgroundColor: '#2196f3'
+
+        }]
+
+    },
+
+    options: {
+
+        scales: {
+
+            y: {
+
+                beginAtZero:true,
+                max:100,
+                title:{
+                    display:true,
+                    text:'Процент загрузки'
+                }
+
+            }
+
+        }
+
+    }
+
+});
+
+    </script>
+</body>
+</html>

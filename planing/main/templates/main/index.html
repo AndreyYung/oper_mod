@@ -1,132 +1,280 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Планирование производства</title>
+<meta charset="UTF-8">
+<title>Планирование производства</title>
 
-    <script>
-        function generateTable() {
-            const n = parseInt(document.getElementById("n_jobs").value);
-            const m = parseInt(document.getElementById("m_machines").value);
-            const table = document.getElementById("matrixTable");
-            table.innerHTML = "";
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
-            for (let i = 0; i < n; i++) {
-                const row = table.insertRow();
-                for (let j = 0; j < m; j++) {
-                    const cell = row.insertCell();
-                    const input = document.createElement("input");
-                    input.type = "number";
-                    input.name = `cell_${i}_${j}`;
-                    input.style.width = "60px";
-                    input.required = true;
-                    cell.appendChild(input);
-                }
+<style>
+    body {
+        font-family: "Inter", sans-serif;
+        background:#f5f7fb;
+        margin:0;
+        padding:20px;
+    }
+
+    .container {
+        max-width:1100px;
+        margin:auto;
+    }
+
+    h2 {
+        margin-bottom:20px;
+        font-size:1.8rem;
+    }
+
+    .card {
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom:25px;
+    }
+
+    label {
+        font-weight:600;
+        margin-bottom:5px;
+    }
+
+    select,input,button {
+        font-family:inherit;
+        padding:8px 10px;
+        border-radius:6px;
+        border:1px solid #ccc;
+        font-size:0.95rem;
+    }
+
+    button {
+        background:#3b82f6;
+        color:white;
+        border:none;
+        cursor:pointer;
+        transition:0.2s;
+    }
+
+    button:hover {
+        background:#2563eb;
+    }
+
+    .table-wrapper {
+        overflow-x:auto;
+    }
+
+    table {
+        border-collapse:collapse;
+        margin-top:10px;
+        min-width:300px;
+    }
+
+    table td, table th {
+        border:1px solid #ddd;
+        padding:6px;
+        text-align:center;
+        font-size:0.9rem;
+    }
+
+    table th {
+        background:#f0f3f8;
+    }
+
+    .row-label {
+        font-weight:600;
+        background:#f8fafc;
+    }
+
+    .controls {
+        display:flex;
+        flex-wrap:wrap;
+        gap:15px;
+        margin-bottom:15px;
+    }
+
+    .controls div {
+        display:flex;
+        flex-direction:column;
+    }
+
+    .buttons {
+        margin-top:15px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    @media (max-width: 768px) {
+        body {
+            padding:10px;
+        }
+        .controls {
+            flex-direction:column;
+        }
+        .buttons {
+            flex-direction:column;
+        }
+        h2 {
+            font-size:1.5rem;
+        }
+        table td, table th {
+            padding:4px;
+            font-size:0.8rem;
+        }
+        input {
+            width: 50px;
+        }
+    }
+</style>
+
+<script>
+    function generateTable() {
+        const n = parseInt(document.getElementById("n_jobs").value);
+        const m = parseInt(document.getElementById("m_machines").value);
+        const table = document.getElementById("matrixTable");
+        table.innerHTML = "";
+
+        const header = table.createTHead();
+        const headerRow = header.insertRow();
+        headerRow.insertCell().textContent="";
+        for(let j=0;j<m;j++){
+            const cell = headerRow.insertCell();
+            cell.textContent="Станок "+(j+1);
+        }
+
+        const tbody = table.createTBody();
+        for(let i=0;i<n;i++){
+            const row=tbody.insertRow();
+            const label=row.insertCell();
+            label.textContent="Деталь "+(i+1);
+            label.className="row-label";
+            for(let j=0;j<m;j++){
+                const cell=row.insertCell();
+                const input=document.createElement("input");
+                input.type="number";
+                input.name=`cell_${i}_${j}`;
+                input.style.width="60px";
+                input.required=true;
+                cell.appendChild(input);
             }
         }
+    }
 
-        function generateRandom() {
-            const inputs = document.querySelectorAll("#matrixTable input");
-            inputs.forEach(input => {
-                input.value = Math.floor(Math.random() * 50) + 1;
-            });
+    function buildTable(matrix){
+        const n=matrix.length;
+        const m=matrix[0].length;
+        const table=document.getElementById("matrixTable");
+        table.innerHTML="";
+
+        const header=table.createTHead();
+        const headerRow=header.insertRow();
+        headerRow.insertCell().textContent="";
+        for(let j=0;j<m;j++){
+            const cell=headerRow.insertCell();
+            cell.textContent="Станок "+(j+1);
         }
 
-        function buildTable(matrix) {
-            const table = document.getElementById("matrixTable");
-            table.innerHTML = "";
-
-            for (let i = 0; i < matrix.length; i++) {
-                const row = table.insertRow();
-                for (let j = 0; j < matrix[i].length; j++) {
-                    const cell = row.insertCell();
-                    const input = document.createElement("input");
-                    input.type = "number";
-                    input.value = matrix[i][j];
-                    input.name = `cell_${i}_${j}`;
-                    input.style.width = "60px";
-                    input.required = true;
-                    cell.appendChild(input);
-                }
+        const tbody=table.createTBody();
+        for(let i=0;i<n;i++){
+            const row=tbody.insertRow();
+            const label=row.insertCell();
+            label.textContent="Деталь "+(i+1);
+            label.className="row-label";
+            for(let j=0;j<m;j++){
+                const cell=row.insertCell();
+                const input=document.createElement("input");
+                input.type="number";
+                input.value=matrix[i][j];
+                input.name=`cell_${i}_${j}`;
+                input.style.width="60px";
+                input.required=true;
+                cell.appendChild(input);
             }
         }
-    </script>
+    }
+
+    function generateRandom(){
+        const inputs=document.querySelectorAll("#matrixTable input");
+        inputs.forEach(input=>{
+            input.value=Math.floor(Math.random()*50)+1;
+        });
+    }
+</script>
 </head>
 
 <body>
+    <div class="container">
 
-<h2>Оперативное планирование</h2>
+    <h2>Система оперативного планирования производства</h2>
 
-<!-- ФОРМА ДЛЯ РАСЧЕТА -->
-<form method="post" action="">
-    {% csrf_token %}
+    <div class="card">
+    <form method="post" action="{% url 'main:calculation' %}">
+        {% csrf_token %}
 
-    <label>Выберите алгоритм:</label>
-    <select name="algorithm">
-        <option value="johnson">Алгоритм Джонсона</option>
-        <option value="petrov">Метод Петрова-Соколицына</option>
-        <option value="branch_bound">Метод ветвей и границ</option>
-        <option value="branch_bound_mod">Метод ветвей и границ (мод.)</option>
-        <option value="new_method">Новый метод</option>
-    </select>
+        <div class="controls">
+        <div>
+        <label>Алгоритм</label>
+        <select name="algorithm_id">
+            {% for algorithm in algorithms %}
+                <option value="{{ algorithm.id }}">{{ algorithm.name }}</option>
+            {% empty %}
+                <option value="">Нет алгоритмов</option>
+            {% endfor %}
+        </select>
+        </div>
 
-    <br><br>
+        <div>
+            <label>Критерий</label>
+                <select name="criterion">
+                <option value="makespan">Минимизация времени цикла</option>
+                <option value="idle">Минимизация простоев</option>
+                <option value="both">Комплексный</option>
+            </select>
+        </div>
 
-    <label>Количество деталей (n):</label>
-    <input type="number"
-           id="n_jobs"
-           name="n_jobs"
-           min="3"
-           max="100"
-           value="{{ n|default:3 }}">
+        <div>
+            <label>Количество деталей</label>
+            <input type="number" id="n_jobs" name="n_jobs" min="3" max="100" value="{{ n|default:3 }}">
+        </div>
 
-    <label>Количество станков (m):</label>
-    <input type="number"
-           id="m_machines"
-           name="m_machines"
-           min="3"
-           max="100"
-           value="{{ m|default:3 }}">
+        <div>
+            <label>Количество станков</label>
+            <input type="number" id="m_machines" name="m_machines" min="3" max="100" value="{{ m|default:3 }}">
+        </div>
+        </div>
 
-    <button type="button" onclick="generateTable()">Создать таблицу</button>
+        <div class="buttons">
+            <button type="button" onclick="generateTable()">Создать таблицу</button>
+            <button type="button" onclick="generateRandom()">Случайные значения</button>
+            <button type="submit">Рассчитать</button>
+        </div>
 
-    <br><br>
+        <div class="table-wrapper">
+            <table id="matrixTable"></table>
+        </div>
 
-    <table border="1" id="matrixTable"></table>
+    </form>
+    </div>
 
-    <br>
+    <div class="card">
+        <form method="post" action="{% url 'main:index' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+                <label>Загрузка Excel</label>
+            <br><br>
+                <input type="file" name="file" accept=".xls,.xlsx">
+            <button type="submit">Загрузить</button>
+        </form>
+    </div>
 
-    <button type="button" onclick="generateRandom()">Сгенерировать случайные значения</button>
+    </div>
 
-    <br><br>
-
-    <button type="submit">Рассчитать</button>
-</form>
-
-<hr>
-
-<!-- ФОРМА ДЛЯ ЗАГРУЗКИ EXCEL -->
-<form method="post"
-      action="{% url 'main:index' %}"
-      enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <label>Загрузить Excel:</label>
-    <input type="file" name="file" accept=".xls,.xlsx">
-    <button type="submit">Загрузить</button>
-</form>
-
-
-<!-- ЕСЛИ ПРИШЛА МАТРИЦА ИЗ EXCEL -->
-{% if matrix %}
-<script>
-    const matrixFromServer = {{ matrix|safe }};
-    document.getElementById("n_jobs").value = {{ n }};
-    document.getElementById("m_machines").value = {{ m }};
-    buildTable(matrixFromServer);
-</script>
-{% endif %}
+    {% if matrix %}
+        <script>
+            const matrixFromServer={{ matrix|safe }};
+            document.getElementById("n_jobs").value={{ n }};
+            document.getElementById("m_machines").value={{ m }};
+            buildTable(matrixFromServer);
+        </script>
+    {% endif %}
 
 </body>
 </html>
